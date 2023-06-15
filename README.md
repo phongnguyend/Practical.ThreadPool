@@ -1,1 +1,5 @@
-# Practical.ThreadPool
+- [The managed thread pool | Microsoft Learn](https://learn.microsoft.com/en-us/dotnet/standard/threading/the-managed-thread-pool)
+- [ThreadPool Class (System.Threading) | Microsoft Learn](https://learn.microsoft.com/en-us/dotnet/api/system.threading.threadpool?view=net-7.0)
+- [Thread.Start Method (System.Threading) | Microsoft Learn](https://learn.microsoft.com/en-us/dotnet/api/system.threading.thread.start?view=net-7.0)
+- [Task.Run Method (System.Threading.Tasks) | Microsoft Learn](https://learn.microsoft.com/en-us/dotnet/api/system.threading.tasks.task.run?view=net-7.0)
+- [Thread Pool in C# with Examples - Dot Net Tutorials](https://dotnettutorials.net/lesson/thread-pooling/)
