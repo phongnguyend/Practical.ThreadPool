@@ -45,6 +45,10 @@ namespace Practical.ThreadPool
                     {
                         action();
                     }
+                    else
+                    {
+                        Thread.Sleep(1);
+                    }
                 }
                 catch (ThreadInterruptedException)
                 {
