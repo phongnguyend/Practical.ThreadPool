@@ -4,25 +4,26 @@ namespace Practical.Channel;
 
 internal class Program
 {
-    static async Task Main(string[] args)
+    static void Main(string[] args)
     {
-        BoundedChannelOptions options = new(100)
+        var options = new BoundedChannelOptions(100)
         {
             FullMode = BoundedChannelFullMode.Wait
         };
-        Channel<Func<CancellationToken, ValueTask>> channel = System.Threading.Channels.Channel.CreateBounded<Func<CancellationToken, ValueTask>>(options);
+
+        var channel = System.Threading.Channels.Channel.CreateBounded<Func<CancellationToken, ValueTask>>(options);
         var cancellationTokenSource = new CancellationTokenSource();
-        _ = Task.Run(async () => await ProcessTaskQueueAsync(channel, cancellationTokenSource.Token));
-        await MonitorAsync(channel, cancellationTokenSource);
+
+        Task.WaitAll(new[] { ProcessTaskQueueAsync(channel, cancellationTokenSource.Token), MonitorAsync(channel, cancellationTokenSource) });
     }
 
-    private static async Task ProcessTaskQueueAsync(Channel<Func<CancellationToken, ValueTask>> channel, CancellationToken stoppingToken)
+    private static async Task ProcessTaskQueueAsync(ChannelReader<Func<CancellationToken, ValueTask>> channelReader, CancellationToken stoppingToken)
     {
         while (!stoppingToken.IsCancellationRequested)
         {
             try
             {
-                Func<CancellationToken, ValueTask>? workItem = await channel.Reader.ReadAsync(stoppingToken);
+                Func<CancellationToken, ValueTask>? workItem = await channelReader.ReadAsync(stoppingToken);
 
                 await workItem(stoppingToken);
             }
@@ -37,7 +38,7 @@ internal class Program
         }
     }
 
-    private static async ValueTask MonitorAsync(Channel<Func<CancellationToken, ValueTask>> channel, CancellationTokenSource cancellationTokenSource)
+    private static async Task MonitorAsync(ChannelWriter<Func<CancellationToken, ValueTask>> channelWriter, CancellationTokenSource cancellationTokenSource)
     {
         int workItemCount = 0;
         while (!cancellationTokenSource.Token.IsCancellationRequested)
@@ -48,7 +49,7 @@ internal class Program
                 workItemCount++;
                 int workItemId = workItemCount;
                 Console.WriteLine("Queuing work item {0}", workItemId);
-                await channel.Writer.WriteAsync(async (token) =>
+                await channelWriter.WriteAsync(async (token) =>
                 {
                     Console.WriteLine("Work item {0} is starting.", workItemId);
                     await Task.Delay(TimeSpan.FromSeconds(5), token);
